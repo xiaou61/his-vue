@@ -6,7 +6,7 @@ const app = createApp(App);
 //导入路由配置
 import router from './router'
 app.use(router)
-app.mount('#app')
+
 
 //导如elementplus的css文件
 import 'element-plus/dist/index.css'
@@ -31,3 +31,89 @@ import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
     app.component(key, component)
 }
+
+// 导入jQuery库，因为ajax用起来方便
+import $ from 'jquery'
+//导入elementui的消息通知组件，下面封装全局的ajax1的时候处理异常需要弹出通知
+import {ElMessage} from "element-plus";
+
+//后端项目的url跟路径
+let baseUrl='http://localhost:7700/his-api';
+app.config.globalProperties.$baseUrl=baseUrl;
+
+//Minio服务器地址
+let minioUrl='http://localhost:9000/his';
+app.config.globalProperties.$minioUrl=minioUrl;
+
+//封装全局的ajax
+app.config.globalProperties.$ajax=function(url:string,method:string,data:JSON,async : boolean, fun : Function) {
+    $.ajax({
+        url: baseUrl + url,
+        type: method,
+        dataType: 'json',
+        contentType: 'application/json',
+        //上传的数据被序列化（允许Ajax上传数组）
+        traditional: true,
+        xhrFields: {
+            //允许Ajax请求跨域
+            withCredentials: true
+        },
+        headers: {
+            token: localStorage.getItem('token')
+        },
+        async: async,
+        data: JSON.stringify(data),
+        success: function (resp : any) {
+            if (resp.code == 200) {
+                fun(resp);
+            } else {
+                ElMessage.error({
+                    message: resp.msg,
+                    duration: 1200
+                });
+            }
+        },
+        error: function (e : any) {
+            //ajax有语法错误的时候
+            if (e.status == undefined) {
+                ElMessage.error({
+                    message: '前端页面错误',
+                    duration: 1200
+                });
+            }
+            else {
+                let status = e.status;
+                //没有登陆体检系统
+                if (status == 401) {
+                    if (url.startsWith('/front/')) {
+                        router.push({
+                            name: 'FrontIndex'
+                        });
+                    } else {
+                        router.push({
+                            name: 'MisLogin'
+                        });
+                    }
+                }
+                else {
+                    //后端没有运行，提交的数据有误，或者没有连接上后端项目
+                    if (!e.hasOwnProperty('responseText')) {
+                        ElMessage.error({
+                            message: '后端项目没有启动，或者HTTP请求类型以及参数错误',
+                            duration: 1200
+                        });
+                    }
+                    else {
+                        ElMessage.error({
+                            message: e.responseText,
+                            duration: 1200
+                        });
+                    }
+                }
+            }
+        }
+    });
+
+}
+
+app.mount('#app')
