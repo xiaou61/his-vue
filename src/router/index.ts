@@ -5,14 +5,24 @@ const history = createWebHistory();
 
 const routes: Array<RouteRecordRaw> = [
     {
-        path: '/front/index',
-        name: '/front/index',
-        component: () => import('../views/front/index.vue')
+        path:'/front',
+        name:'Front',
+        component:()=>import('../views/front/main.vue'),
+        children:[
+            {
+                path:'index',
+                name:'FrontIndex',
+                component : () => import('../views/front/index.vue')
+            }
+        ]
     },
     {
-        path: '/mis/login',
-        name: '/mis/login',
-        component: () => import('../views/mis/login.vue')
+        path:'/mis',
+        name:'Main',
+        component:()=>import('../views/mis/main.vue'),
+        children:[
+
+        ]
     },
     {
         path: '/404',
