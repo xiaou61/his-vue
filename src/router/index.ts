@@ -7,11 +7,18 @@ const routes: Array<RouteRecordRaw> = [
     {
         path: '/front/index',
         name: '/front/index',
-        component: () => import('../views/front/index.vue')},
+        component: () => import('../views/front/index.vue')
+    },
     {
         path: '/mis/login',
         name: '/mis/login',
-        component: () => import('../views/mis/login.vue')},
+        component: () => import('../views/mis/login.vue')
+    },
+    {
+        path: '/404',
+        name: '404',
+        component: () => import('../views/404.vue')
+    },
 
 ];
 
